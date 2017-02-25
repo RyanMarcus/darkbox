@@ -169,7 +169,7 @@ document.addEventListener("DOMContentLoaded", function() {
     
     var renderer = new THREE.WebGLRenderer();
 
-    renderer.setPixelRatio(0.75);
+    renderer.setPixelRatio(0.25);
     renderer.setSize( window.innerWidth, window.innerHeight );
 
     console.log("Pixel ratio: " + renderer.getPixelRatio());
