@@ -1,0 +1,21 @@
+{
+    "name": "darkbox",
+    "version": "0.0.1",
+    "description": "An animation of a wooden box",
+    "main": "darkbox.js",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "author": "Ryan Marcus <ryan@ryanmarc.us>",
+    "license": "GPL-3.0",
+    "devDependencies": {
+        "babel-cli": "^6.23.0",
+        "babel-preset-env": "^1.1.10",
+        "uglify-js": "^2.7.5"
+    },
+    "babel": {
+        "presets": [
+            "env"
+        ]
+    }
+}
