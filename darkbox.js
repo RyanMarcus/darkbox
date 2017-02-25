@@ -80,7 +80,7 @@ function normToPos(norm) {
     return MIN_DIM + (norm * (MAX_DIM - MIN_DIM));
 }
 const loader = new THREE.TextureLoader();
-const texture = loader.load("images/dark-wood.jpg");
+const texture = loader.load("images/dark-wood.png");
 
 function levelSetToMeshes(depthArray, level) {
     // build a list of boxes running right to left of the appropiate height
@@ -168,7 +168,11 @@ document.addEventListener("DOMContentLoaded", function() {
     );
     
     var renderer = new THREE.WebGLRenderer();
+
+    renderer.setPixelRatio(0.75);
     renderer.setSize( window.innerWidth, window.innerHeight );
+
+    console.log("Pixel ratio: " + renderer.getPixelRatio());
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     document.body.appendChild( renderer.domElement );
@@ -222,45 +226,45 @@ document.addEventListener("DOMContentLoaded", function() {
     light.position.set(0, -2, 2);
     scene.add(light);
     light.castShadow = true;
-    light.shadow.mapSize.width = 2048;
-    light.shadow.mapSize.height = 2048;
+    light.shadow.mapSize.width = 1024;
+    light.shadow.mapSize.height = 1024;
 
     var light2 = new THREE.DirectionalLight(0x444444);
     light2.position.set(3, -1, 8);
     scene.add(light2);
     light2.castShadow = true;
-    light2.shadow.mapSize.width = 2048;
-    light2.shadow.mapSize.height = 2048;
+    light2.shadow.mapSize.width = 1024;
+    light2.shadow.mapSize.height = 1024;
 
     
     var light3 = new THREE.DirectionalLight(0x444444);
     light3.position.set(-3, -1, 8);
     scene.add(light3);
     light3.castShadow = true;
-    light3.shadow.mapSize.width = 2048;
-    light3.shadow.mapSize.height = 2048;
+    light3.shadow.mapSize.width = 1024;
+    light3.shadow.mapSize.height = 1024;
 
     var light4 = new THREE.DirectionalLight(0x444444);
     light4.position.set(0, 1, 8);
     scene.add(light4);
     light4.castShadow = true;
-    light4.shadow.mapSize.width = 2048;
-    light4.shadow.mapSize.height = 2048;
+    light4.shadow.mapSize.width = 1024;
+    light4.shadow.mapSize.height = 1024;
 
     var light5 = new THREE.DirectionalLight(0x444444);
     light5.position.set(-3, 1, 8);
     scene.add(light5);
     light5.castShadow = true;
-    light5.shadow.mapSize.width = 2048;
-    light5.shadow.mapSize.height = 2048;
+    light5.shadow.mapSize.width = 1024;
+    light5.shadow.mapSize.height = 1024;
 
 
     var light6 = new THREE.DirectionalLight(0x444444);
     light6.position.set(3, 1, 8);
     scene.add(light6);
     light6.castShadow = true;
-    light6.shadow.mapSize.width = 2048;
-    light6.shadow.mapSize.height = 2048;
+    light6.shadow.mapSize.width = 1024;
+    light6.shadow.mapSize.height = 1024;
 
 
     // add some ambient light
