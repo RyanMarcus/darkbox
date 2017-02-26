@@ -21,8 +21,8 @@
  
  
  
-const MIN_DIM = -3;
-const MAX_DIM = 3;
+let MIN_DIM = -3;
+let MAX_DIM = 3;
 
 const MIN_CUT_HEIGHT = 8;
 const MIN_CUT_WIDTH = 40;
@@ -172,35 +172,20 @@ document.addEventListener("DOMContentLoaded", function() {
     renderer.setPixelRatio(0.5);
     renderer.setSize( window.innerWidth, window.innerHeight );
 
-    console.log("Pixel ratio: " + renderer.getPixelRatio());
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     document.body.appendChild( renderer.domElement );
 
-    /*var geometry = new THREE.BoxGeometry( 0.5, 4, 1 );
-     var material = new THREE.MeshStandardMaterial( { color: 0x00ff00 } );
-     var cube = new THREE.Mesh(geometry, material);
-     var cube2 = new THREE.Mesh(geometry, material);
-     var cube3 = new THREE.Mesh(geometry, material);
-     var cube4 = new THREE.Mesh(geometry, material);
+    // compute the visible dimensions at z = MAX_HEIGHT
+    const cFOV = camera.fov * Math.PI / 180;
+    const height = 2 * Math.tan(cFOV / 2) * MAX_HEIGHT;
+    const aspect = window.innerWidth / window.innerHeight;
+    const width = height * aspect;
+    const minDim = Math.min(width, height);
+    MIN_DIM = 0 - (minDim / 2);
+    MAX_DIM = minDim / 2;
 
-     cube.castShadow = true;
-     cube2.castShadow = true;
-
-     cube.position.x = -1.75;
-     cube2.position.x = 1.75;
-
-     cube3.rotation.z = Math.PI / 2;
-     cube3.position.y = 2;
-
-     cube4.rotation.z = Math.PI / 2;
-     cube4.position.y = -2;
-
-     scene.add(cube4);
-     scene.add(cube3);
-     scene.add(cube2);
-     scene.add(cube);*/
-
+    
     const grid = buildRandomDepthArray();
     let boxes = [];
     boxes = boxes.concat(levelSetToMeshes(grid, 10), boxes);
@@ -220,6 +205,8 @@ document.addEventListener("DOMContentLoaded", function() {
     
     camera.position.z = 6;
     camera.position.y = 0;
+
+
 
 
     var light = new THREE.DirectionalLight(0xb0b0b0);
