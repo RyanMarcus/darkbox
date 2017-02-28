@@ -82,6 +82,7 @@ function normToPos(norm) {
 const loader = new THREE.TextureLoader();
 const texture = loader.load("images/dark-wood.png");
 
+
 function levelSetToMeshes(depthArray, level) {
     // build a list of boxes running right to left of the appropiate height
     // for the given level. Maximize the width of the box first.
@@ -159,6 +160,98 @@ function levelSetToMeshes(depthArray, level) {
     
 }
 
+function area(box) {
+    return box.geometry.parameters.width
+        * box.geometry.parameters.height;
+}
+
+function getTextGeo(text, size, font) {
+    console.log("build with size " + size);
+    const geo = new THREE.TextGeometry(text, {
+        font: font,
+        size: size,
+        height: 0.001
+    });
+
+    geo.computeBoundingBox();
+    return geo;
+}
+
+
+function addText(boxes, font) {
+    // first, sort the boxes by largest area.
+    boxes.sort((a, b) => area(b) - area(a));
+
+    // put a letter on the top 3
+    let geometry;
+    let size = 0.5;
+    boxes[0].geometry.computeBoundingBox();
+    const boxWidth = (boxes[0].geometry.boundingBox.max.x -
+                      boxes[0].geometry.boundingBox.min.x) * 0.8;
+
+    const boxHeight = (boxes[0].geometry.boundingBox.max.y -
+                       boxes[0].geometry.boundingBox.min.y) * 0.8;
+
+    const material = new THREE.MeshBasicMaterial({});
+    
+    if (boxWidth > boxHeight) {
+        // put the text normally
+        for (geometry = getTextGeo("Ryan Marcus", size, font);
+             geometry.boundingBox.max.x - geometry.boundingBox.min.x > boxWidth
+             && size > 0;
+             size -= 0.01) {
+            geometry = getTextGeo("Ryan Marcus", size, font);
+        }
+
+        let text = new THREE.Mesh(geometry, material);
+        text.castShadow = false;
+        text.receiveShadow = true;
+        geometry.computeBoundingBox();
+        //geometry.computeVertexNormals();
+        
+        let centerOffsetX = (geometry.boundingBox.max.x
+                               - geometry.boundingBox.min.x) / 2;
+        let centerOffsetY = (geometry.boundingBox.max.y
+                               - geometry.boundingBox.min.y) / 2;
+        
+        text.position.x = boxes[0].position.x - centerOffsetX;
+        text.position.y = boxes[0].position.y - centerOffsetY;
+        text.position.z = boxes[0].geometry.parameters.depth/2;
+        text.rotation.z = 0;
+        
+        return [text];
+    } else {
+        // rotate the text 90 degrees
+        for (geometry = getTextGeo("Ryan Marcus", size, font);
+             geometry.boundingBox.max.x - geometry.boundingBox.min.x > boxHeight
+             && size > 0;
+             size -= 0.01) {
+            geometry = getTextGeo("Ryan Marcus", size, font);
+        }
+        
+        let text = new THREE.Mesh(geometry, material);
+        text.castShadow = false;
+        text.receiveShadow = true;
+        geometry.computeBoundingBox();
+        //geometry.computeVertexNormals();
+        
+        let centerOffsetX = (geometry.boundingBox.max.x
+                               - geometry.boundingBox.min.x) / 2;
+        let centerOffsetY = (geometry.boundingBox.max.y
+                               - geometry.boundingBox.min.y) / 2;
+        
+        text.position.x = boxes[0].position.x + centerOffsetY;
+        text.position.y = boxes[0].position.y - centerOffsetX;
+        text.position.z = boxes[0].geometry.parameters.depth/2;
+        text.rotation.z = Math.PI / 2;
+        
+        return [text];
+    }
+    
+
+
+}
+
 function isMobile() {
   var check = false;
   (function(a){if(/(android|bb\d+|meego).+mobile|avantgo|bada\/|blackberry|blazer|compal|elaine|fennec|hiptop|iemobile|ip(hone|od)|iris|kindle|lge |maemo|midp|mmp|mobile.+firefox|netfront|opera m(ob|in)i|palm( os)?|phone|p(ixi|re)\/|plucker|pocket|psp|series(4|6)0|symbian|treo|up\.(browser|link)|vodafone|wap|windows ce|xda|xiino/i.test(a)||/1207|6310|6590|3gso|4thp|50[1-6]i|770s|802s|a wa|abac|ac(er|oo|s\-)|ai(ko|rn)|al(av|ca|co)|amoi|an(ex|ny|yw)|aptu|ar(ch|go)|as(te|us)|attw|au(di|\-m|r |s )|avan|be(ck|ll|nq)|bi(lb|rd)|bl(ac|az)|br(e|v)w|bumb|bw\-(n|u)|c55\/|capi|ccwa|cdm\-|cell|chtm|cldc|cmd\-|co(mp|nd)|craw|da(it|ll|ng)|dbte|dc\-s|devi|dica|dmob|do(c|p)o|ds(12|\-d)|el(49|ai)|em(l2|ul)|er(ic|k0)|esl8|ez([4-7]0|os|wa|ze)|fetc|fly(\-|_)|g1 u|g560|gene|gf\-5|g\-mo|go(\.w|od)|gr(ad|un)|haie|hcit|hd\-(m|p|t)|hei\-|hi(pt|ta)|hp( i|ip)|hs\-c|ht(c(\-| |_|a|g|p|s|t)|tp)|hu(aw|tc)|i\-(20|go|ma)|i230|iac( |\-|\/)|ibro|idea|ig01|ikom|im1k|inno|ipaq|iris|ja(t|v)a|jbro|jemu|jigs|kddi|keji|kgt( |\/)|klon|kpt |kwc\-|kyo(c|k)|le(no|xi)|lg( g|\/(k|l|u)|50|54|\-[a-w])|libw|lynx|m1\-w|m3ga|m50\/|ma(te|ui|xo)|mc(01|21|ca)|m\-cr|me(rc|ri)|mi(o8|oa|ts)|mmef|mo(01|02|bi|de|do|t(\-| |o|v)|zz)|mt(50|p1|v )|mwbp|mywa|n10[0-2]|n20[2-3]|n30(0|2)|n50(0|2|5)|n7(0(0|1)|10)|ne((c|m)\-|on|tf|wf|wg|wt)|nok(6|i)|nzph|o2im|op(ti|wv)|oran|owg1|p800|pan(a|d|t)|pdxg|pg(13|\-([1-8]|c))|phil|pire|pl(ay|uc)|pn\-2|po(ck|rt|se)|prox|psio|pt\-g|qa\-a|qc(07|12|21|32|60|\-[2-7]|i\-)|qtek|r380|r600|raks|rim9|ro(ve|zo)|s55\/|sa(ge|ma|mm|ms|ny|va)|sc(01|h\-|oo|p\-)|sdk\/|se(c(\-|0|1)|47|mc|nd|ri)|sgh\-|shar|sie(\-|m)|sk\-0|sl(45|id)|sm(al|ar|b3|it|t5)|so(ft|ny)|sp(01|h\-|v\-|v )|sy(01|mb)|t2(18|50)|t6(00|10|18)|ta(gt|lk)|tcl\-|tdg\-|tel(i|m)|tim\-|t\-mo|to(pl|sh)|ts(70|m\-|m3|m5)|tx\-9|up(\.b|g1|si)|utst|v400|v750|veri|vi(rg|te)|vk(40|5[0-3]|\-v)|vm40|voda|vulc|vx(52|53|60|61|70|80|81|83|85|98)|w3c(\-| )|webc|whit|wi(g |nc|nw)|wmlb|wonu|x700|yas\-|your|zeto|zte\-/i.test(a.substr(0,4))) check = true;})(navigator.userAgent||navigator.vendor||window.opera);
@@ -178,7 +271,7 @@ document.addEventListener("DOMContentLoaded", function() {
     if (isMobile()) {
         renderer.setPixelRatio(0.25);
     } else {
-        renderer.setPixelRatio(0.75);
+        renderer.setPixelRatio(1.0);
     }
     renderer.setSize( window.innerWidth, window.innerHeight );
 
@@ -201,6 +294,21 @@ document.addEventListener("DOMContentLoaded", function() {
     boxes = boxes.concat(levelSetToMeshes(grid, 10), boxes);
     boxes = boxes.concat(levelSetToMeshes(grid, 8), boxes);
     boxes = boxes.concat(levelSetToMeshes(grid, 5), boxes);
+
+    let txt = false;
+    
+    axios.get("fonts/helvetiker_bold.typeface.json")
+        .then(function(d) {
+            const fontLoader = new THREE.FontLoader();
+            const font = fontLoader.parse(d.data);
+            txt = addText(boxes, font);
+            for (let t of txt)
+                scene.add(t);
+
+            console.log("added text!");
+              
+        });
+    
 
     for (let box of boxes) {
         scene.add(box);
@@ -271,7 +379,8 @@ document.addEventListener("DOMContentLoaded", function() {
     let currentBox = false;
     let direction = -1;
     function selectNewBox() {
-        const idx = Math.floor(Math.random() * boxes.length);
+        //const idx = Math.floor(Math.random() * boxes.length);
+        const idx = 0;
         currentBox = boxes[idx];
         direction = 1;
     }
@@ -283,10 +392,16 @@ document.addEventListener("DOMContentLoaded", function() {
             currentBox.position.z = 0;
             selectNewBox();
         }
+        
         const steps = t - lastT;
         currentBox.position.z += steps * (direction * ANIMATION_INCREMENT);
         if (currentBox.position.z >= MAX_ANIMATION_HEIGHT)
             direction = -1;
+
+        if (txt) {
+            txt[0].position.z = (currentBox.geometry.parameters.depth / 2) 
+                + currentBox.position.z;
+        }
         
         lastT = t;
         
