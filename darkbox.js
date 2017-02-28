@@ -81,7 +81,7 @@ function normToPos(norm) {
 }
 const loader = new THREE.TextureLoader();
 const texture = loader.load("images/dark-wood.png");
-
+const texture2 = loader.load("images/metal.jpg");
 
 function levelSetToMeshes(depthArray, level) {
     // build a list of boxes running right to left of the appropiate height
@@ -178,77 +178,91 @@ function getTextGeo(text, size, font) {
 }
 
 
+function createSingleTextItem(box, font, txt) {
+    let geometry;
+    let size = 0.3;
+    box.geometry.computeBoundingBox();
+    const boxWidth = (box.geometry.boundingBox.max.x -
+                      box.geometry.boundingBox.min.x) * 0.8;
+
+    const boxHeight = (box.geometry.boundingBox.max.y -
+                       box.geometry.boundingBox.min.y) * 0.8;
+
+    const material = new THREE.MeshStandardMaterial({
+        color: "#000000",
+        metalness: 0.0,
+        roughness: 1.0
+    });
+
+    if (boxWidth > boxHeight) {
+        // put the text normally
+
+        for (geometry = getTextGeo(txt, size, font);
+             geometry.boundingBox.max.x - geometry.boundingBox.min.x > boxWidth
+             && size > 0;
+             size -= 0.01) {
+            geometry = getTextGeo(txt, size, font);
+        }
+
+        let text = new THREE.Mesh(geometry, material);
+        text.castShadow = false;
+        text.receiveShadow = true;
+        geometry.computeBoundingBox();
+        //geometry.computeVertexNormals();
+        
+        let centerOffsetX = (geometry.boundingBox.max.x
+                               - geometry.boundingBox.min.x) / 2;
+        let centerOffsetY = (geometry.boundingBox.max.y
+                               - geometry.boundingBox.min.y) / 2;
+        
+        text.position.x = box.position.x - centerOffsetX;
+        text.position.y = box.position.y - centerOffsetY;
+        text.position.z = box.geometry.parameters.depth/2;
+        text.rotation.z = 0;
+        
+        return text;
+    } else {
+        // rotate the text 90 degrees
+        for (geometry = getTextGeo(txt, size, font);
+             geometry.boundingBox.max.x - geometry.boundingBox.min.x > boxHeight
+             && size > 0;
+             size -= 0.01) {
+            geometry = getTextGeo(txt, size, font);
+        }
+        
+        let text = new THREE.Mesh(geometry, material);
+        text.castShadow = false;
+        text.receiveShadow = true;
+        geometry.computeBoundingBox();
+        //geometry.computeVertexNormals();
+        
+        let centerOffsetX = (geometry.boundingBox.max.x
+                               - geometry.boundingBox.min.x) / 2;
+        let centerOffsetY = (geometry.boundingBox.max.y
+                               - geometry.boundingBox.min.y) / 2;
+        
+        text.position.x = box.position.x + centerOffsetY;
+        text.position.y = box.position.y - centerOffsetX;
+        text.position.z = box.geometry.parameters.depth/2;
+        text.rotation.z = Math.PI / 2;
+        
+        return text;
+    }
+    
+
+}
+
 function addText(boxes, font) {
     // first, sort the boxes by largest area.
     boxes.sort((a, b) => area(b) - area(a));
 
+    console.log("Number of boxes: " + boxes.length);
+    
     // put a letter on the top 3
-    let geometry;
-    let size = 0.5;
-    boxes[0].geometry.computeBoundingBox();
-    const boxWidth = (boxes[0].geometry.boundingBox.max.x -
-                      boxes[0].geometry.boundingBox.min.x) * 0.8;
-
-    const boxHeight = (boxes[0].geometry.boundingBox.max.y -
-                       boxes[0].geometry.boundingBox.min.y) * 0.8;
-
-    const material = new THREE.MeshBasicMaterial({});
-    
-    if (boxWidth > boxHeight) {
-        // put the text normally
-        for (geometry = getTextGeo("Ryan Marcus", size, font);
-             geometry.boundingBox.max.x - geometry.boundingBox.min.x > boxWidth
-             && size > 0;
-             size -= 0.01) {
-            geometry = getTextGeo("Ryan Marcus", size, font);
-        }
-
-        let text = new THREE.Mesh(geometry, material);
-        text.castShadow = false;
-        text.receiveShadow = true;
-        geometry.computeBoundingBox();
-        //geometry.computeVertexNormals();
-        
-        let centerOffsetX = (geometry.boundingBox.max.x
-                               - geometry.boundingBox.min.x) / 2;
-        let centerOffsetY = (geometry.boundingBox.max.y
-                               - geometry.boundingBox.min.y) / 2;
-        
-        text.position.x = boxes[0].position.x - centerOffsetX;
-        text.position.y = boxes[0].position.y - centerOffsetY;
-        text.position.z = boxes[0].geometry.parameters.depth/2;
-        text.rotation.z = 0;
-        
-        return [text];
-    } else {
-        // rotate the text 90 degrees
-        for (geometry = getTextGeo("Ryan Marcus", size, font);
-             geometry.boundingBox.max.x - geometry.boundingBox.min.x > boxHeight
-             && size > 0;
-             size -= 0.01) {
-            geometry = getTextGeo("Ryan Marcus", size, font);
-        }
-        
-        let text = new THREE.Mesh(geometry, material);
-        text.castShadow = false;
-        text.receiveShadow = true;
-        geometry.computeBoundingBox();
-        //geometry.computeVertexNormals();
-        
-        let centerOffsetX = (geometry.boundingBox.max.x
-                               - geometry.boundingBox.min.x) / 2;
-        let centerOffsetY = (geometry.boundingBox.max.y
-                               - geometry.boundingBox.min.y) / 2;
-        
-        text.position.x = boxes[0].position.x + centerOffsetY;
-        text.position.y = boxes[0].position.y - centerOffsetX;
-        text.position.z = boxes[0].geometry.parameters.depth/2;
-        text.rotation.z = Math.PI / 2;
-        
-        return [text];
-    }
-    
-
+    return [createSingleTextItem(boxes[0], font, "Twitter"),
+            createSingleTextItem(boxes[1], font, "Blog"),
+            createSingleTextItem(boxes[2], font, "CV")];
+   
 
 }
 
@@ -271,7 +285,7 @@ document.addEventListener("DOMContentLoaded", function() {
     if (isMobile()) {
         renderer.setPixelRatio(0.25);
     } else {
-        renderer.setPixelRatio(1.0);
+        renderer.setPixelRatio(0.75);
     }
     renderer.setSize( window.innerWidth, window.innerHeight );
 
@@ -291,10 +305,11 @@ document.addEventListener("DOMContentLoaded", function() {
 
     const grid = buildRandomDepthArray();
     let boxes = [];
-    boxes = boxes.concat(levelSetToMeshes(grid, 10), boxes);
-    boxes = boxes.concat(levelSetToMeshes(grid, 8), boxes);
-    boxes = boxes.concat(levelSetToMeshes(grid, 5), boxes);
+    boxes = boxes.concat(levelSetToMeshes(grid, 10));
+    boxes = boxes.concat(levelSetToMeshes(grid, 8));
+    boxes = boxes.concat(levelSetToMeshes(grid, 5));
 
+    
     let txt = false;
     
     axios.get("fonts/helvetiker_bold.typeface.json")
@@ -376,18 +391,17 @@ document.addEventListener("DOMContentLoaded", function() {
     var aLight = new THREE.AmbientLight(0x777777);
     scene.add(aLight);
 
-    let currentBox = false;
+    let currentBoxIdx = false;
     let direction = -1;
     function selectNewBox() {
-        //const idx = Math.floor(Math.random() * boxes.length);
-        const idx = 0;
-        currentBox = boxes[idx];
+        currentBoxIdx = Math.floor(Math.random() * boxes.length);
         direction = 1;
     }
     selectNewBox();
 
     let lastT = 0;
     function render(t) {
+        const currentBox = boxes[currentBoxIdx];        
         if (currentBox.position.z <= 0) {
             currentBox.position.z = 0;
             selectNewBox();
@@ -398,10 +412,14 @@ document.addEventListener("DOMContentLoaded", function() {
         if (currentBox.position.z >= MAX_ANIMATION_HEIGHT)
             direction = -1;
 
+        // sync all the text
         if (txt) {
-            txt[0].position.z = (currentBox.geometry.parameters.depth / 2) 
-                + currentBox.position.z;
+            for (let i = 0; i < txt.length; i++) {
+                txt[i].position.z = boxes[i].position.z
+                    + (boxes[i].geometry.parameters.depth / 2);
+            }
         }
+
         
         lastT = t;
         
