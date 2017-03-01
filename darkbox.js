@@ -408,13 +408,15 @@ document.addEventListener("DOMContentLoaded", function() {
         for (let b of boxes) {
             b.position.z = 0;
         }
+
+        console.log("selected box " + currentBoxIdx);
     }
     selectNewBox();
 
     let lastT = 0;
     function render(t) {
         const currentBox = boxes[currentBoxIdx];        
-        if (currentBox.position.z <= 0) {
+        if (currentBox.position.z < 0) {
             currentBox.position.z = 0;
             selectNewBox();
         }
