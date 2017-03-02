@@ -26,7 +26,7 @@ let MAX_DIM = 3;
 
 const MIN_CUT_HEIGHT = 8;
 const MIN_CUT_WIDTH = 40;
-const EDGE_PADDING = 1;
+const EDGE_PADDING = 5;
 
 const MAX_HEIGHT = 3;
 
@@ -178,9 +178,13 @@ function getTextGeo(text, size, font) {
 }
 
 
-function createSingleTextItem(box, font, txt) {
+function createSingleTextItem(box, font, txt, url) {
     let geometry;
     let size = 0.3;
+
+    box.callback = function () {
+        window.location = url;
+    };
     box.geometry.computeBoundingBox();
     const boxWidth = (box.geometry.boundingBox.max.x -
                       box.geometry.boundingBox.min.x) * 0.8;
@@ -267,9 +271,12 @@ function addText(boxes, font) {
     console.log("Number of boxes: " + boxes.length);
     
     // put a letter on the top 3
-    return [createSingleTextItem(boxes[0], font, "Twitter"),
-            createSingleTextItem(boxes[1], font, "Blog"),
-            createSingleTextItem(boxes[2], font, "CV")];
+    return [createSingleTextItem(boxes[0], font, "Twitter",
+                                 "https://twitter.com/RyanMarcus"),
+            createSingleTextItem(boxes[1], font, "Blog",
+                                 "https://rmarcus.info/blog/"),
+            createSingleTextItem(boxes[2], font, "CV",
+                                 "https://rmarcus.info/blog/assets/RMarcusCV.pdf")];
     
 
 }
@@ -317,7 +324,6 @@ document.addEventListener("DOMContentLoaded", function() {
     boxes = boxes.concat(levelSetToMeshes(grid, 8));
     boxes = boxes.concat(levelSetToMeshes(grid, 5));
 
-    
     let txt = false;
     
     axios.get("fonts/helvetiker_bold.typeface.json")
@@ -409,12 +415,16 @@ document.addEventListener("DOMContentLoaded", function() {
             b.position.z = 0;
         }
 
-        console.log("selected box " + currentBoxIdx);
     }
     selectNewBox();
 
     let lastT = 0;
     function render(t) {
+        if (t - lastT < 41) {
+            requestAnimationFrame( render );
+            return;
+        }
+        
         const currentBox = boxes[currentBoxIdx];        
         if (currentBox.position.z < 0) {
             currentBox.position.z = 0;
@@ -437,8 +447,27 @@ document.addEventListener("DOMContentLoaded", function() {
         
         lastT = t;
         
-	requestAnimationFrame( render );
 	renderer.render( scene, camera );
+	requestAnimationFrame( render );
     }
     render(0);
+
+    var raycaster = new THREE.Raycaster();
+    var mouse = new THREE.Vector2();
+    
+    function onDocumentMouseDown( event ) {
+        event.preventDefault();
+        mouse.x = (event.clientX / renderer.domElement.clientWidth) * 2 - 1;
+        mouse.y = -(event.clientY / renderer.domElement.clientHeight) * 2 + 1;
+        
+        raycaster.setFromCamera( mouse, camera );
+        var intersects = raycaster.intersectObjects(boxes); 
+
+        if (intersects.length > 0 && intersects[0].object.callback) {
+            intersects[0].object.callback();
+        }
+        
+    }
+
+    document.addEventListener("mousedown", onDocumentMouseDown);
 });
